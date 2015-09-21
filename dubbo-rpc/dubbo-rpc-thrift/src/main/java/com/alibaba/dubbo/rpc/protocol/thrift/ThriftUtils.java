@@ -89,6 +89,14 @@ public class ThriftUtils {
 
     }
 
+    public static String generateIsMethodName( String fieldName ) {
+        return new StringBuffer( 16 )
+                .append( "is" )
+                .append( Character.toUpperCase( fieldName.charAt( 0 ) ) )
+                .append( fieldName.substring( 1 ) )
+                .toString();
+    }
+
     public static String generateGetMethodName( String fieldName ) {
         return new StringBuffer( 16 )
                 .append( "get" )

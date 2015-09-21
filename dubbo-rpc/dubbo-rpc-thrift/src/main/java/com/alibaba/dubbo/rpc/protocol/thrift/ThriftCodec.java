@@ -242,8 +242,14 @@ public class ThriftCodec implements Codec2 {
                 try {
                     getMethod = clazz.getMethod( getMethodName );
                 } catch ( NoSuchMethodException e ) {
-                    throw new RpcException(
-                            RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e );
+                    getMethodName = ThriftUtils.generateIsMethodName( fieldName );
+                    try {
+                        getMethod = clazz.getMethod( getMethodName );
+                    } catch (NoSuchMethodException e1) {
+                        throw new RpcException(
+                                RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e );
+                    }
+
                 }
 
                 parameterTypes.add( getMethod.getReturnType() );
@@ -585,8 +591,20 @@ public class ThriftCodec implements Codec2 {
                 String setMethodName = ThriftUtils.generateSetMethodName( fieldName );
                 Method getMethod;
                 Method setMethod;
+
                 try {
                     getMethod = clazz.getMethod( getMethodName );
+                } catch ( NoSuchMethodException e ) {
+                    getMethodName = ThriftUtils.generateIsMethodName( fieldName );
+                    try {
+                        getMethod = clazz.getMethod( getMethodName );
+                    } catch (NoSuchMethodException e1) {
+                        throw new RpcException(
+                                RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e );
+                    }
+                }
+
+                try {
                     if ( getMethod.getReturnType().equals( throwable.getClass() ) ) {
                         found = true;
                         setMethod = clazz.getMethod( setMethodName, throwable.getClass() );
