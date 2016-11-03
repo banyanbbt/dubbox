@@ -36,7 +36,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 
 /**
- * TraceFilter
+ * RpcTraceFilter
  * 
  * @author william.liangf
  */
