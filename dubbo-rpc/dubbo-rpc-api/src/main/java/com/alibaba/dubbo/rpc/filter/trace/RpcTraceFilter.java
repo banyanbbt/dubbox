@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.filter;
+package com.alibaba.dubbo.rpc.filter.trace;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.Activate;
@@ -11,7 +11,7 @@ import com.alibaba.dubbo.rpc.*;
  *
  * @author qianjc
  * @version 0.0.1
- * @desc
+ * @desc dubbo rpc trace filter
  * @date 2016-11-03 17:57:54
  */
 @Activate(group = {Constants.PROVIDER, Constants.CONSUMER})
@@ -21,9 +21,11 @@ public class RpcTraceFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        RpcContext context = RpcContext.getContext();
+        boolean isConsumerSide = context.isConsumerSide();
 
-        String serviceInterface = RpcContext.getContext().getUrl().getServiceInterface();
-        LOGGER.info("interface is: " + serviceInterface);
+
+
         Result result = invoker.invoke(invocation);
         return result;
     }
