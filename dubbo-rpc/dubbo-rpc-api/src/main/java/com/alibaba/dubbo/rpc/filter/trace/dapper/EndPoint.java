@@ -15,7 +15,7 @@ public class EndPoint implements Serializable {
     // rpc服务启动的ip
     private String ip;
     // rpc服务启动的端口
-    private String port;
+    private Integer port;
     // rpc服务名字
     private String serviceName;
 
@@ -23,10 +23,19 @@ public class EndPoint implements Serializable {
 
     }
 
-    public EndPoint(String ip, String port, String serviceName) {
+    public EndPoint(String ip, Integer port, String serviceName) {
         this.ip = ip;
         this.port = port;
         this.serviceName = serviceName;
+    }
+
+    @Override
+    public String toString() {
+        return "EndPoint{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", serviceName='" + serviceName + '\'' +
+                '}';
     }
 
     @Override
@@ -36,27 +45,18 @@ public class EndPoint implements Serializable {
 
         EndPoint endPoint = (EndPoint) o;
 
-        if (!ip.equals(endPoint.ip)) return false;
-        if (!port.equals(endPoint.port)) return false;
-        return serviceName.equals(endPoint.serviceName);
+        if (ip != null ? !ip.equals(endPoint.ip) : endPoint.ip != null) return false;
+        if (port != null ? !port.equals(endPoint.port) : endPoint.port != null) return false;
+        return serviceName != null ? serviceName.equals(endPoint.serviceName) : endPoint.serviceName == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = ip.hashCode();
-        result = 31 * result + port.hashCode();
-        result = 31 * result + serviceName.hashCode();
+        int result = ip != null ? ip.hashCode() : 0;
+        result = 31 * result + (port != null ? port.hashCode() : 0);
+        result = 31 * result + (serviceName != null ? serviceName.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "EndPoint{" +
-                "ip='" + ip + '\'' +
-                ", port='" + port + '\'' +
-                ", serviceName='" + serviceName + '\'' +
-                '}';
     }
 
     public String getIp() {
@@ -67,11 +67,11 @@ public class EndPoint implements Serializable {
         this.ip = ip;
     }
 
-    public String getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 

@@ -20,4 +20,10 @@ public class Constants {
     public static final String CR_KEY = "cr";
     public static final String CR_VALUE = "client receive";
 
+    // RpcInvocation attachment和捕捉annotation中的exception相关
+    public static final String TRACE_ID = "traceId";
+    public static final String SPAN_ID = "spanId";
+    public static final String PARENT_ID = "parentId";
+    public static final String SAMPLE = "isSample";
+    public static final String DUBBO_EXCEPTION = "dubbo.exception";
 }
