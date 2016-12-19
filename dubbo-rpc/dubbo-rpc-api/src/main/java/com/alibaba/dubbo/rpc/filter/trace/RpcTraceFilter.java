@@ -62,9 +62,13 @@ public class RpcTraceFilter implements Filter {
 
         LOGGER.info("我是Span" + span.toString());
 
+        this.invokeBefore(span, isConsumerSide, isProviderSide);
+
         this.setAttachment(rpcInvocation, span);
 
         Result result = invoker.invoke(invocation);
+
+        this.invokeAfter(span, isConsumerSide, isProviderSide);
         return result;
     }
 
@@ -76,11 +80,37 @@ public class RpcTraceFilter implements Filter {
     private void setAttachment(RpcInvocation invocation, Span span) {
         if (span.isSample() && null != span) {
             // 如果进行采样
-            invocation.setAttachment(Constants.TRACE_ID, String.valueOf(span.getTraceId()));
-            invocation.setAttachment(Constants.SPAN_ID, String.valueOf(span.getId()));
-            invocation.setAttachment(Constants.PARENT_ID, String.valueOf(span.getParentId()));
-            invocation.setAttachment(Constants.SAMPLE, String.valueOf(span.isSample()));
+            invocation.setAttachment(Constants.TRACE_ID, span.getTraceId() == null ? null : String.valueOf(span.getTraceId()));
+            invocation.setAttachment(Constants.SPAN_ID, span.getId() == null ? null : String.valueOf(span.getId()));
+            invocation.setAttachment(Constants.PARENT_ID, span.getParentId() == null ? null : String.valueOf(span.getParentId()));
+            invocation.setAttachment(Constants.SAMPLE, span.isSample() == null ? null : String.valueOf(span.isSample()));
         }
 
+    }
+
+    /**
+     * 调用具体逻辑之前，记录相关的annotation、设置对应的parentSpan
+     * @param span
+     * @param isConsumerSide
+     * @param isProviderSide
+     */
+    private void invokeBefore(Span span, boolean isConsumerSide, boolean isProviderSide) {
+        Tracer tracer = Tracer.getInstance();
+        if (isProviderSide) {
+            tracer.setParentSpan(span);
+        }
+    }
+
+    /**
+     * 调用具体逻辑之后，记录相关的annotation、去除对应的parentSpan
+     * @param span
+     * @param isConsumerSide
+     * @param isProviderSide
+     */
+    private void invokeAfter(Span span, boolean isConsumerSide, boolean isProviderSide) {
+        Tracer tracer = Tracer.getInstance();
+        if (isProviderSide) {
+            tracer.removeParentSpan();
+        }
     }
 }

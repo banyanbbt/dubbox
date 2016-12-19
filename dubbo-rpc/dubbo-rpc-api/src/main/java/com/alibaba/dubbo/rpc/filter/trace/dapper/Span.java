@@ -27,13 +27,13 @@ public class Span implements Serializable {
     // annotations
     private List<Annotation> annotations;
     // 是否采样
-    private boolean isSample;
+    private Boolean isSample;
 
     public Span() {
 
     }
 
-    public Span(Long traceId, Long id, Long parentId, String name, String serviceId, List<Annotation> annotations, boolean isSample) {
+    public Span(Long traceId, Long id, Long parentId, String name, String serviceId, List<Annotation> annotations, Boolean isSample) {
         this.traceId = traceId;
         this.id = id;
         this.parentId = parentId;
@@ -111,11 +111,11 @@ public class Span implements Serializable {
         this.annotations = annotations;
     }
 
-    public boolean isSample() {
+    public Boolean isSample() {
         return isSample;
     }
 
-    public void setSample(boolean sample) {
+    public void setSample(Boolean sample) {
         isSample = sample;
     }
 }
