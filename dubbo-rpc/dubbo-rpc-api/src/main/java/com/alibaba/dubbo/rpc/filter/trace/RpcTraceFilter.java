@@ -4,10 +4,7 @@ import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.rpc.*;
-import com.alibaba.dubbo.rpc.filter.trace.dapper.AttachmentUtil;
-import com.alibaba.dubbo.rpc.filter.trace.dapper.Constants;
-import com.alibaba.dubbo.rpc.filter.trace.dapper.EndPoint;
-import com.alibaba.dubbo.rpc.filter.trace.dapper.Span;
+import com.alibaba.dubbo.rpc.filter.trace.dapper.*;
 import com.alibaba.dubbo.remoting.TimeoutException;
 
 /**
@@ -73,17 +70,17 @@ public class RpcTraceFilter implements Filter {
 
             if (result.hasException()) {
                 // 如果在请求过程中发生了异常, 需要进行异常的处理和相关annotation的记录
-                this.processException();
+                this.processException(endPoint, result.getException().getMessage(), span, ExceptionType.EXCEPTION);
             }
 
             return result;
         } catch (RpcException e) {
             if (null != e.getCause() && e.getCause() instanceof TimeoutException) {
-                // 如果异常是com.alibaba.dubbo.remoting.TimeoutException
-                this.processTimeoutException();
+                // 执行该filter发生异常，如果异常是com.alibaba.dubbo.remoting.TimeoutException
+                this.processException(endPoint, e.getMessage(), span, ExceptionType.TIMEOUTEXCEPTION);
             } else {
                 // 其他异常
-                this.processException();
+                this.processException(endPoint, e.getMessage(), span, ExceptionType.EXCEPTION);
             }
             // 将异常抛出去
             throw e;
@@ -96,12 +93,21 @@ public class RpcTraceFilter implements Filter {
 
     }
 
-    private void processTimeoutException() {
-
-    }
-
-    private void processException() {
-
+    /**
+     * 处理异常，构造Span的BinaryAnntation
+     * @param endPoint
+     * @param message
+     * @param span
+     * @param type
+     */
+    private void processException(EndPoint endPoint, String message, Span span, ExceptionType type) {
+        BinaryAnnotation exAnnotation = new BinaryAnnotation();
+        exAnnotation.setKey(type.label());
+        exAnnotation.setValue(message);
+        exAnnotation.setType(type.symbol());
+        exAnnotation.setEndPoint(endPoint);
+        // TODO: add到span
+//        tracer.addBinaryAnntation(exAnnotation);
     }
 
     /**

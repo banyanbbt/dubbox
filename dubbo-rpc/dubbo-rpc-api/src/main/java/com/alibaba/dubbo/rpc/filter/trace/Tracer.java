@@ -2,6 +2,8 @@ package com.alibaba.dubbo.rpc.filter.trace;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.rpc.filter.trace.dapper.Annotation;
+import com.alibaba.dubbo.rpc.filter.trace.dapper.AnnotationType;
 import com.alibaba.dubbo.rpc.filter.trace.dapper.EndPoint;
 import com.alibaba.dubbo.rpc.filter.trace.dapper.Span;
 import com.unionpaysmart.brood.http.HttpRequest;
@@ -34,7 +36,7 @@ public class Tracer {
     }
 
     /**
-     * double check 保证示例化的Tracer对象为单例
+     * double check 保证实例化的Tracer对象为单例
      * @return
      */
     public static Tracer getInstance() {
@@ -69,7 +71,7 @@ public class Tracer {
     }
 
     /**
-     * 构造span，参数通过上游接口传递过来
+     * 构造span，参数通过上游或者parentSpan传递过来
      * @param traceId
      * @param parentId
      * @param id
@@ -136,5 +138,64 @@ public class Tracer {
      */
     public Long generateTraceId() {
         return Long.parseLong(HttpRequest.get(TRACE_GENERATER_URL, Constants.EMPTY_STR));
+    }
+
+    /**
+     * consumer向provider发送请求
+     * @param span
+     * @param endPoint
+     * @param start
+     */
+    public void clientSend(Span span, EndPoint endPoint, long start) {
+        Annotation annotation = this.buildAnnotation(endPoint, start, AnnotationType.CS);
+        span.addAnnotation(annotation);
+    }
+
+    /**
+     * provider接受到consumer的请求
+     * @param span
+     * @param endPoint
+     * @param end
+     */
+    public void serverReceive(Span span, EndPoint endPoint, long end) {
+        Annotation annotation = this.buildAnnotation(endPoint, end, AnnotationType.SR);
+        span.addAnnotation(annotation);
+    }
+
+    /**
+     * provider处理完业务逻辑响应consumer
+     * @param span
+     * @param endPoint
+     * @param start
+     */
+    public void serverSend(Span span, EndPoint endPoint, long start) {
+        Annotation annotation = this.buildAnnotation(endPoint, start, AnnotationType.SS);
+    }
+
+    /**
+     * consumer接收到provider的响应
+     * @param span
+     * @param endPoint
+     * @param end
+     */
+    public void clientReceive(Span span, EndPoint endPoint, long end) {
+        Annotation annotation = this.buildAnnotation(endPoint, end, AnnotationType.CR);
+        span.addAnnotation(annotation);
+        // TODO: 向kafka进行发送
+    }
+
+    /**
+     * 构造annotation
+     * @param endPoint
+     * @param timestamp
+     * @param type
+     * @return
+     */
+    private Annotation buildAnnotation(EndPoint endPoint, long timestamp, AnnotationType type) {
+        Annotation annotation = new Annotation();
+        annotation.setEndPoint(endPoint);
+        annotation.setTimestamp(timestamp);
+        annotation.setValue(type.symbol());
+        return annotation;
     }
 }

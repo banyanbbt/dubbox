@@ -25,5 +25,7 @@ public class Constants {
     public static final String SPAN_ID = "spanId";
     public static final String PARENT_ID = "parentId";
     public static final String SAMPLE = "isSample";
+    public static final String EXCEPTION = "exception";
     public static final String DUBBO_EXCEPTION = "dubbo.exception";
+    public static final String DUBBO_TIMEPUTEXCEPTION = "dubbo.timeoutexception";
 }
