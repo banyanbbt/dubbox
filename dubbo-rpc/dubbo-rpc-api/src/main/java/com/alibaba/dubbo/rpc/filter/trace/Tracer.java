@@ -170,6 +170,9 @@ public class Tracer {
      */
     public void serverSend(Span span, EndPoint endPoint, long start) {
         Annotation annotation = this.buildAnnotation(endPoint, start, AnnotationType.SS);
+        span.addAnnotation(annotation);
+        // TODO: 向kafka进行发送
+        LOGGER.info("SS, " + span.toString());
     }
 
     /**
@@ -182,6 +185,7 @@ public class Tracer {
         Annotation annotation = this.buildAnnotation(endPoint, end, AnnotationType.CR);
         span.addAnnotation(annotation);
         // TODO: 向kafka进行发送
+        LOGGER.info("CR, " + span.toString());
     }
 
     /**

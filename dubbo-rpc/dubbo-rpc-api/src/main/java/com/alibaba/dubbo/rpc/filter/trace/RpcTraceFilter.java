@@ -22,6 +22,7 @@ public class RpcTraceFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        long start = System.currentTimeMillis();
         RpcContext context = RpcContext.getContext();
         boolean isConsumerSide = context.isConsumerSide();
         boolean isProviderSide = context.isProviderSide();
@@ -37,7 +38,6 @@ public class RpcTraceFilter implements Filter {
         try {
             if (isConsumerSide) {
                 // 如果是消费者
-                LOGGER.info("消费者");
                 Span parentSpan = tracer.getParentSpan();
                 if (null == parentSpan) {
                     // 如果parentSpan为null, 表示该Span为root span
@@ -46,11 +46,10 @@ public class RpcTraceFilter implements Filter {
                 } else {
                     // 叶子span
                     // TODO: 设计serviceId
-                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(), methodName, parentSpan.isSample(), "");
+                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(), methodName, parentSpan.getSample(), "");
                 }
             } else if (isProviderSide) {
                 // 如果是生产者
-                LOGGER.info("生产者");
                 Long traceId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.TRACE_ID);
                 Long parentId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.PARENT_ID);
                 Long spanId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.SPAN_ID);
@@ -59,10 +58,8 @@ public class RpcTraceFilter implements Filter {
                 span = tracer.buildSpan(traceId, parentId, spanId, methodName, isSample, "");
             }
 
-            LOGGER.info("我是Span" + span.toString());
-
             // 调用具体业务逻辑之前处理
-            this.invokeBefore(span, isConsumerSide, isProviderSide);
+            this.invokeBefore(span, endPoint, start, isConsumerSide, isProviderSide);
             // 传递附件到RpcInvocation, 传递到下游，确保下游能够收到traceId等相关信息，保证请求能够标记到正确的traceId
             this.setAttachment(rpcInvocation, span);
             // 执行具体的业务或者下游的filter
@@ -87,7 +84,8 @@ public class RpcTraceFilter implements Filter {
         } finally {
             // 调用具体业务逻辑之后处理
             if (null != span) {
-                this.invokeAfter(span, isConsumerSide, isProviderSide);
+                long end = System.currentTimeMillis();
+                this.invokeAfter(span, endPoint, end, isConsumerSide, isProviderSide);
             }
         }
 
@@ -116,12 +114,12 @@ public class RpcTraceFilter implements Filter {
      * @param span
      */
     private void setAttachment(RpcInvocation invocation, Span span) {
-        if (span.isSample() && null != span) {
+        if (span.getSample() && null != span) {
             // 如果进行采样
             invocation.setAttachment(Constants.TRACE_ID, span.getTraceId() == null ? null : String.valueOf(span.getTraceId()));
             invocation.setAttachment(Constants.SPAN_ID, span.getId() == null ? null : String.valueOf(span.getId()));
             invocation.setAttachment(Constants.PARENT_ID, span.getParentId() == null ? null : String.valueOf(span.getParentId()));
-            invocation.setAttachment(Constants.SAMPLE, span.isSample() == null ? null : String.valueOf(span.isSample()));
+            invocation.setAttachment(Constants.SAMPLE, span.getSample() == null ? null : String.valueOf(span.getSample()));
         }
 
     }
@@ -129,18 +127,20 @@ public class RpcTraceFilter implements Filter {
     /**
      * 调用具体逻辑之前，记录相关的annotation、设置对应的parentSpan
      * @param span
+     * @param endPoint
      * @param isConsumerSide
      * @param isProviderSide
      */
-    private void invokeBefore(Span span, boolean isConsumerSide, boolean isProviderSide) {
+    private void invokeBefore(Span span, EndPoint endPoint, long start, boolean isConsumerSide, boolean isProviderSide) {
         Tracer tracer = Tracer.getInstance();
-        if (isConsumerSide && span.isSample()) {
+        if (isConsumerSide && span.getSample()) {
             // 如果是消费者, ClientSend
-
+            tracer.clientSend(span, endPoint, start);
         } else if (isProviderSide) {
             // 如果是提供者
-            if (span.isSample()) {
+            if (span.getSample()) {
                 // ServerReceive
+                tracer.serverReceive(span, endPoint, start);
             }
             // 将该span作为parentSpan设置到ThreadLocal中
             tracer.setParentSpan(span);
@@ -150,17 +150,21 @@ public class RpcTraceFilter implements Filter {
     /**
      * 调用具体逻辑之后，记录相关的annotation、去除对应的parentSpan
      * @param span
+     * @param endPoint
+     * @param end
      * @param isConsumerSide
      * @param isProviderSide
      */
-    private void invokeAfter(Span span, boolean isConsumerSide, boolean isProviderSide) {
+    private void invokeAfter(Span span, EndPoint endPoint, long end, boolean isConsumerSide, boolean isProviderSide) {
         Tracer tracer = Tracer.getInstance();
-        if (isConsumerSide && span.isSample()) {
+        if (isConsumerSide && span.getSample()) {
             // 如果是消费者, ClientReceive
+            tracer.clientReceive(span, endPoint, end);
         } else if (isProviderSide) {
             // 如果是提供者
-            if (span.isSample()) {
+            if (span.getSample()) {
                 // ServerSend
+                tracer.serverSend(span, endPoint, end);
             }
             tracer.removeParentSpan();
         }
