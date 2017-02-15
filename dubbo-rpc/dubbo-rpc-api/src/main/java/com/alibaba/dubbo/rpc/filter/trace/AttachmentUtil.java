@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.filter.trace.dapper;
+package com.alibaba.dubbo.rpc.filter.trace;
 
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.RpcInvocation;

@@ -41,8 +41,8 @@
 		</dependency>
 		<dependency>
 			<groupId>monitor-center</groupId>
-			<artifactId>brood-http</artifactId>
-			<version>0.1.0</version>
+			<artifactId>veno</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
 </project>
