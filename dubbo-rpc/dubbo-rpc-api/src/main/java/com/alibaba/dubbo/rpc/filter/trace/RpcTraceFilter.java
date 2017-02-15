@@ -92,7 +92,7 @@ public class RpcTraceFilter implements Filter {
     }
 
     /**
-     * 处理异常，构造Span的BinaryAnntation
+     * 处理异常，构造Span的BinaryAnnotation
      * @param endPoint
      * @param message
      * @param span
