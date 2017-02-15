@@ -27,6 +27,9 @@ public class Tracer {
     // 单例
     private static volatile Tracer tracer;
 
+    // 采样器实例
+    private Sampler sampler = new PercentageSampler();
+
     private static final String SPAN_GENERATER_URL = "http://localhost:8889/id/span";
     private static final String TRACE_GENERATER_URL = "http://localhost:8889/id/trace";
 
@@ -92,13 +95,13 @@ public class Tracer {
     }
 
     /**
-     * 构造span, 生成id
+     * 构造root span, 生成id, 并确定是否采样
      * @param name
      * @param serviceId
      * @return
      */
     public Span newSpan(String name, String serviceId) {
-        boolean s = true;
+        boolean s = this.sampler.isCollect();
         Span span = new Span();
         span.setTraceId(s ? this.generateTraceId() : null);
         span.setId(s ? this.generateSpanId() : null);
