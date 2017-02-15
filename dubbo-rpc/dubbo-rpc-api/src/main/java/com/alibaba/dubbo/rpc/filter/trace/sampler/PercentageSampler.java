@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.filter.trace;
+package com.alibaba.dubbo.rpc.filter.trace.sampler;
 
 import java.util.concurrent.atomic.AtomicLong;
 

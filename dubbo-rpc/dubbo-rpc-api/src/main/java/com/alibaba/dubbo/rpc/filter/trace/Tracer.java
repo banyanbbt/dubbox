@@ -6,6 +6,8 @@ import com.alibaba.dubbo.rpc.filter.trace.dapper.Annotation;
 import com.alibaba.dubbo.rpc.filter.trace.dapper.AnnotationType;
 import com.alibaba.dubbo.rpc.filter.trace.dapper.EndPoint;
 import com.alibaba.dubbo.rpc.filter.trace.dapper.Span;
+import com.alibaba.dubbo.rpc.filter.trace.sampler.PercentageSampler;
+import com.alibaba.dubbo.rpc.filter.trace.sampler.Sampler;
 import com.unionpaysmart.brood.http.HttpRequest;
 import com.unionpaysmart.shaker.constant.Constants;
 

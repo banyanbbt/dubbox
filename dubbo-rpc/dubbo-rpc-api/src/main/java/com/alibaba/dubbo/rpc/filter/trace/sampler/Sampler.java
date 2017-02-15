@@ -1,4 +1,4 @@
-package com.alibaba.dubbo.rpc.filter.trace;
+package com.alibaba.dubbo.rpc.filter.trace.sampler;
 
 /**
  * Copyright (C), 2016, 银联智惠信息服务（上海）有限公司
