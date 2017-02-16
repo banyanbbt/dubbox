@@ -72,17 +72,17 @@ public class RpcTraceFilter implements Filter {
 
             if (result.hasException()) {
                 // 如果在请求过程中发生了异常, 需要进行异常的处理和相关annotation的记录
-                this.processException(endPoint, result.getException().getMessage(), span, ExceptionType.EXCEPTION);
+                this.processException(endPoint, result.getException().getMessage(), ExceptionType.EXCEPTION);
             }
 
             return result;
         } catch (RpcException e) {
             if (null != e.getCause() && e.getCause() instanceof TimeoutException) {
                 // 执行该filter发生异常，如果异常是com.alibaba.dubbo.remoting.TimeoutException
-                this.processException(endPoint, e.getMessage(), span, ExceptionType.TIMEOUTEXCEPTION);
+                this.processException(endPoint, e.getMessage(), ExceptionType.TIMEOUTEXCEPTION);
             } else {
                 // 其他异常
-                this.processException(endPoint, e.getMessage(), span, ExceptionType.EXCEPTION);
+                this.processException(endPoint, e.getMessage(), ExceptionType.EXCEPTION);
             }
             // 将异常抛出去
             throw e;
@@ -100,17 +100,17 @@ public class RpcTraceFilter implements Filter {
      * 处理异常，构造Span的BinaryAnnotation
      * @param endPoint
      * @param message
-     * @param span
      * @param type
      */
-    private void processException(EndPoint endPoint, String message, Span span, ExceptionType type) {
+    private void processException(EndPoint endPoint, String message, ExceptionType type) {
         BinaryAnnotation exAnnotation = new BinaryAnnotation();
         exAnnotation.setKey(type.label());
         exAnnotation.setValue(message);
         exAnnotation.setType(type.symbol());
         exAnnotation.setEndPoint(endPoint);
-        // TODO: add到span
-//        tracer.addBinaryAnntation(exAnnotation);
+        // add到span
+        Tracer tracer = Tracer.getInstance();
+        tracer.addBinaryAnntation(exAnnotation);
     }
 
     /**
