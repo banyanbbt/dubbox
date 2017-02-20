@@ -55,10 +55,10 @@ public class RpcTraceFilter implements Filter {
                 }
             } else if (isProviderSide) {
                 // 如果是生产者
-                Long traceId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.TRACE_ID);
-                Long parentId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.PARENT_ID);
-                Long spanId = AttachmentUtil.getAttachmentLong(rpcInvocation, Constants.SPAN_ID);
-                boolean isSample = traceId != null;
+                String traceId = AttachmentUtil.getAttachment(rpcInvocation, Constants.TRACE_ID);
+                String parentId = AttachmentUtil.getAttachment(rpcInvocation, Constants.PARENT_ID);
+                String spanId = AttachmentUtil.getAttachment(rpcInvocation, Constants.SPAN_ID);
+                boolean isSample = traceId != null && AttachmentUtil.getAttachmentBoolean(rpcInvocation, Constants.SAMPLE);
                 // TODO: 设计serviceId
                 span = tracer.buildSpan(traceId, parentId, spanId, methodName, isSample, "");
             }

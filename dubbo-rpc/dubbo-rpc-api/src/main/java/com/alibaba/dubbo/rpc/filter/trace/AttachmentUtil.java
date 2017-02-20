@@ -19,12 +19,12 @@ public class AttachmentUtil {
      * @param key
      * @return
      */
-    public static Long getAttachmentLong(RpcInvocation invocation, String key) {
+    public static String getAttachment(RpcInvocation invocation, String key) {
         String value = invocation.getAttachment(key);
         if (StringUtils.isBlank(value)) {
             return null;
         }
-        return Long.valueOf(value);
+        return value;
     }
 
     /**
