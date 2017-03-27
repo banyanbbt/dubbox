@@ -3,19 +3,20 @@ package com.alibaba.dubbo.rpc.filter.trace;
 import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.remoting.TimeoutException;
-import com.unionpaysmart.shaker.constant.Constants;
-import com.unionpaysmart.shaker.dapper.BinaryAnnotation;
-import com.unionpaysmart.shaker.dapper.EndPoint;
-import com.unionpaysmart.shaker.dapper.ExceptionType;
-import com.unionpaysmart.shaker.dapper.Span;
-import com.unionpaysmart.veno.trace.Tracer;
+import com.jthink.skyeye.base.constant.Constants;
+import com.jthink.skyeye.base.dapper.BinaryAnnotation;
+import com.jthink.skyeye.base.dapper.EndPoint;
+import com.jthink.skyeye.base.dapper.ExceptionType;
+import com.jthink.skyeye.base.dapper.Span;
+import com.jthink.skyeye.trace.generater.IncrementIdGen;
+import com.jthink.skyeye.trace.trace.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Copyright (C), 2016, 银联智惠信息服务（上海）有限公司
- *
- * @author qianjc
+ * JThink@JThink
+ *60
+ * @author JThink.
  * @version 0.0.1
  * @desc dubbo rpc trace filter
  * @date 2016-11-03 17:57:54
@@ -27,6 +28,11 @@ public class RpcTraceFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        if (IncrementIdGen.getId() == null) {
+            // 如果分配的id未生成
+            return invoker.invoke(invocation);
+        }
+        String id = IncrementIdGen.getId();
         long start = System.currentTimeMillis();
         RpcContext context = RpcContext.getContext();
         boolean isConsumerSide = context.isConsumerSide();
@@ -34,10 +40,12 @@ public class RpcTraceFilter implements Filter {
         String methodName = context.getMethodName();
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
 
+        //　设计的serviceId, 最前一位防止存入hbase的数据分散不均匀
+        String serviceId = id + Constants.UNDER_LINE + context.getUrl().getServiceInterface() + Constants.UNDER_LINE + methodName;
+
         Tracer tracer = Tracer.getInstance();
 
-        // TODO: 设计serviceName
-        EndPoint endPoint = tracer.buildEndPoint(context.getLocalAddressString(), context.getLocalPort(), "");
+        EndPoint endPoint = tracer.buildEndPoint(context.getLocalAddressString(), context.getLocalPort());
 
         Span span = null;
         try {
@@ -46,12 +54,10 @@ public class RpcTraceFilter implements Filter {
                 Span parentSpan = tracer.getParentSpan();
                 if (null == parentSpan) {
                     // 如果parentSpan为null, 表示该Span为root span
-                    // TODO: 设计serviceId
-                    span = tracer.newSpan(methodName, "");
+                    span = tracer.newSpan(methodName, serviceId);
                 } else {
                     // 叶子span
-                    // TODO: 设计serviceId
-                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(), methodName, parentSpan.getSample(), "");
+                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(), methodName, parentSpan.getSample(), serviceId);
                 }
             } else if (isProviderSide) {
                 // 如果是生产者
@@ -59,8 +65,7 @@ public class RpcTraceFilter implements Filter {
                 String parentId = AttachmentUtil.getAttachment(rpcInvocation, Constants.PARENT_ID);
                 String spanId = AttachmentUtil.getAttachment(rpcInvocation, Constants.SPAN_ID);
                 boolean isSample = traceId != null && AttachmentUtil.getAttachmentBoolean(rpcInvocation, Constants.SAMPLE);
-                // TODO: 设计serviceId
-                span = tracer.buildSpan(traceId, parentId, spanId, methodName, isSample, "");
+                span = tracer.buildSpan(traceId, parentId, spanId, methodName, isSample, serviceId);
             }
 
             // 调用具体业务逻辑之前处理

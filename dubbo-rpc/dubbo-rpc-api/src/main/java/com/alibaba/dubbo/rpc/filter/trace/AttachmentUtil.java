@@ -4,9 +4,9 @@ import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 
 /**
- * Copyright (C), 2016, 银联智惠信息服务（上海）有限公司
+ * JThink@JThink
  *
- * @author qianjc
+ * @author JThink
  * @version 0.0.1
  * @desc dubbo RpcInvocation的Attachment操作, 能够向下游传递参数
  * @date 2016-12-16 15:55:48

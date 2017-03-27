@@ -40,8 +40,8 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>monitor-center</groupId>
-			<artifactId>veno</artifactId>
+			<groupId>skyeye</groupId>
+			<artifactId>skyeye-trace</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 	</dependencies>
