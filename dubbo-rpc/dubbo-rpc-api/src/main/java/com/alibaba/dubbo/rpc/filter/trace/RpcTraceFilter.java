@@ -8,7 +8,9 @@ import com.jthink.skyeye.base.dapper.BinaryAnnotation;
 import com.jthink.skyeye.base.dapper.EndPoint;
 import com.jthink.skyeye.base.dapper.ExceptionType;
 import com.jthink.skyeye.base.dapper.Span;
+import com.jthink.skyeye.trace.generater.IdGen;
 import com.jthink.skyeye.trace.generater.IncrementIdGen;
+import com.jthink.skyeye.trace.generater.UniqueIdGen;
 import com.jthink.skyeye.trace.trace.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,7 @@ public class RpcTraceFilter implements Filter {
             // 如果分配的id未生成
             return invoker.invoke(invocation);
         }
+
         String id = IncrementIdGen.getId();
         long start = System.currentTimeMillis();
         RpcContext context = RpcContext.getContext();
@@ -44,6 +47,8 @@ public class RpcTraceFilter implements Filter {
         String serviceId = id + Constants.UNDER_LINE + context.getUrl().getServiceInterface() + Constants.UNDER_LINE + methodName;
 
         Tracer tracer = Tracer.getInstance();
+        // 对分布式唯一生成器实例化
+        tracer.setIdGen(new UniqueIdGen(Long.parseLong(id)));
 
         EndPoint endPoint = tracer.buildEndPoint(context.getLocalAddressString(), context.getLocalPort());
 
