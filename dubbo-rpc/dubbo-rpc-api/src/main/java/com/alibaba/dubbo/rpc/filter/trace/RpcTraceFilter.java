@@ -41,8 +41,8 @@ public class RpcTraceFilter implements Filter {
         String methodName = context.getMethodName();
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
 
-        //　设计的serviceId, 最前一位防止存入hbase的数据分散不均匀
-        String serviceId = id + Constants.UNDER_LINE + context.getUrl().getServiceInterface() + Constants.UNDER_LINE + methodName;
+        //　设计的serviceId
+        String serviceId = context.getUrl().getServiceInterface() + Constants.UNDER_LINE + methodName;
 
         Tracer tracer = Tracer.getInstance();
 
