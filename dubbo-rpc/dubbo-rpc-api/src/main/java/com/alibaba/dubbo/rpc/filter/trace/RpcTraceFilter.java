@@ -33,7 +33,6 @@ public class RpcTraceFilter implements Filter {
             return invoker.invoke(invocation);
         }
 
-        String id = IncrementIdGen.getId();
         long start = System.currentTimeMillis();
         RpcContext context = RpcContext.getContext();
         boolean isConsumerSide = context.isConsumerSide();
