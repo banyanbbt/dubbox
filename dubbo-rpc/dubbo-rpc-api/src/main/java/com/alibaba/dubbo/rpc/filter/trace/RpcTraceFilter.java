@@ -8,8 +8,8 @@ import com.jthink.skyeye.base.dapper.BinaryAnnotation;
 import com.jthink.skyeye.base.dapper.EndPoint;
 import com.jthink.skyeye.base.dapper.ExceptionType;
 import com.jthink.skyeye.base.dapper.Span;
-import com.jthink.skyeye.trace.generater.IncrementIdGen;
-import com.jthink.skyeye.trace.trace.Tracer;
+import com.jthink.skyeye.trace.core.generater.IncrementIdGen;
+import com.jthink.skyeye.trace.core.trace.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

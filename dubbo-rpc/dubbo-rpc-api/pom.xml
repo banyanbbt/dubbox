@@ -41,7 +41,7 @@
 		</dependency>
 		<dependency>
 			<groupId>skyeye</groupId>
-			<artifactId>skyeye-trace</artifactId>
+			<artifactId>skyeye-trace-core</artifactId>
 			<version>1.2.0</version>
 		</dependency>
 	</dependencies>
