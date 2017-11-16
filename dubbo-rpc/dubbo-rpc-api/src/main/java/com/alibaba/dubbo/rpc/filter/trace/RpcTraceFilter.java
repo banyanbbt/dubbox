@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JThink@JThink
- *60
- * @author JThink.
+ *
+ * @author JThink
  * @version 0.0.1
  * @desc dubbo rpc trace filter
  * @date 2016-11-03 17:57:54
