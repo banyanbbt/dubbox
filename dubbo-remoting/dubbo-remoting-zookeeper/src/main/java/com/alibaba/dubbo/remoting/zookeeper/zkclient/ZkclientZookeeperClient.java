@@ -42,7 +42,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
 			@Override
 			public void handleSessionEstablishmentError(Throwable error) throws Exception {
-				
+
 			}
 		});
 	}
