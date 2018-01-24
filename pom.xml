@@ -715,17 +715,4 @@
     </developer>
   </developers>
 
-  <distributionManagement>
-    <repository>
-      <id>releases</id>
-      <name>releases</name>
-      <url>http://192.168.88.8:8081/nexus/content/repositories/releases</url>
-    </repository>
-    <snapshotRepository>
-      <id>Snapshots</id>
-      <name>Snapshots</name>
-      <url>http://192.168.88.8:8081/nexus/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
-
 </project>

@@ -12,6 +12,9 @@ import com.gravity.bigbrother.skyeye.trace.core.generater.IncrementIdGen;
 import com.gravity.bigbrother.skyeye.trace.core.trace.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import static com.gravity.bigbrother.skyeye.base.constant.Constants.TRACKID;
 
 /**
  * JThink@JThink
@@ -28,8 +31,11 @@ public class RpcTraceFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        // 从MDC获取trackId
+        String trackId = MDC.get(Constants.TRACKID);
         if (IncrementIdGen.getId() == null) {
             // 如果分配的id未生成
+            LOGGER.info("唯一id未生成，不走RpcTraceFilter");
             return invoker.invoke(invocation);
         }
 
@@ -40,7 +46,7 @@ public class RpcTraceFilter implements Filter {
         String methodName = context.getMethodName();
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
 
-        //　设计的serviceId
+        // 设计的serviceId
         String serviceId = context.getUrl().getServiceInterface() + Constants.UNDER_LINE + methodName;
 
         Tracer tracer = Tracer.getInstance();
@@ -66,12 +72,13 @@ public class RpcTraceFilter implements Filter {
                 String spanId = AttachmentUtil.getAttachment(rpcInvocation, Constants.SPAN_ID);
                 boolean isSample = traceId != null && AttachmentUtil.getAttachmentBoolean(rpcInvocation, Constants.SAMPLE);
                 span = tracer.buildSpan(traceId, parentId, spanId, methodName, isSample, serviceId);
+                MDC.put(TRACKID, AttachmentUtil.getAttachment(rpcInvocation, Constants.TRACKID));
             }
 
             // 调用具体业务逻辑之前处理
             this.invokeBefore(span, endPoint, start, isConsumerSide, isProviderSide);
             // 传递附件到RpcInvocation, 传递到下游，确保下游能够收到traceId等相关信息，保证请求能够标记到正确的traceId
-            this.setAttachment(rpcInvocation, span);
+            this.setAttachment(rpcInvocation, span, trackId);
             // 执行具体的业务或者下游的filter
             Result result = invoker.invoke(invocation);
 
@@ -122,8 +129,9 @@ public class RpcTraceFilter implements Filter {
      * 将Span的相关值设置到RpcInvocation的attachment中, 然后传递到下游
      * @param invocation
      * @param span
+     * @param trackId
      */
-    private void setAttachment(RpcInvocation invocation, Span span) {
+    private void setAttachment(RpcInvocation invocation, Span span, String trackId) {
         if (span.getSample() && null != span) {
             // 如果进行采样
             invocation.setAttachment(Constants.TRACE_ID, span.getTraceId() == null ? null : String.valueOf(span.getTraceId()));
@@ -131,7 +139,7 @@ public class RpcTraceFilter implements Filter {
             invocation.setAttachment(Constants.PARENT_ID, span.getParentId() == null ? null : String.valueOf(span.getParentId()));
             invocation.setAttachment(Constants.SAMPLE, span.getSample() == null ? null : String.valueOf(span.getSample()));
         }
-
+        invocation.setAttachment(Constants.TRACKID, trackId);
     }
 
     /**
