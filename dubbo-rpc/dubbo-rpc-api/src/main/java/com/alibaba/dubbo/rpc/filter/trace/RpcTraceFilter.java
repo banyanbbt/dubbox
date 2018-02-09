@@ -1,8 +1,8 @@
 package com.alibaba.dubbo.rpc.filter.trace;
 
 import com.alibaba.dubbo.common.extension.Activate;
-import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.remoting.TimeoutException;
+import com.alibaba.dubbo.rpc.*;
 import com.gravity.bigbrother.skyeye.base.constant.Constants;
 import com.gravity.bigbrother.skyeye.base.dapper.BinaryAnnotation;
 import com.gravity.bigbrother.skyeye.base.dapper.EndPoint;
@@ -63,7 +63,7 @@ public class RpcTraceFilter implements Filter {
                     span = tracer.newSpan(methodName, serviceId);
                 } else {
                     // 叶子span
-                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(), methodName, parentSpan.getSample(), serviceId);
+                    span = tracer.buildSpan(parentSpan.getTraceId(), parentSpan.getId(), tracer.generateSpanId(parentSpan), methodName, parentSpan.getSample(), serviceId);
                 }
             } else if (isProviderSide) {
                 // 如果是生产者
@@ -78,7 +78,7 @@ public class RpcTraceFilter implements Filter {
             // 调用具体业务逻辑之前处理
             this.invokeBefore(span, endPoint, start, isConsumerSide, isProviderSide);
             // 传递附件到RpcInvocation, 传递到下游，确保下游能够收到traceId等相关信息，保证请求能够标记到正确的traceId
-            this.setAttachment(rpcInvocation, span, trackId);
+            this.setAttachment(rpcInvocation, span, trackId, tracer, isProviderSide);
             // 执行具体的业务或者下游的filter
             Result result = invoker.invoke(invocation);
 
@@ -130,8 +130,9 @@ public class RpcTraceFilter implements Filter {
      * @param invocation
      * @param span
      * @param trackId
+     * @param isProviderSide
      */
-    private void setAttachment(RpcInvocation invocation, Span span, String trackId) {
+    private void setAttachment(RpcInvocation invocation, Span span, String trackId, Tracer tracer, boolean isProviderSide) {
         if (span.getSample() && null != span) {
             // 如果进行采样
             invocation.setAttachment(Constants.TRACE_ID, span.getTraceId() == null ? null : String.valueOf(span.getTraceId()));
